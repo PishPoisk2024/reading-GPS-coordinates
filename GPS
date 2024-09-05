@@ -1,0 +1,20 @@
+import time #Библиотека для вывода времени
+from pymavlink import mavutil #Библиотека для подключения и обработки pixhawk
+
+master = mavutil.mavlink_connection('COM12', 57600) #Подключение к pixhawk6c по UART
+master.wait_heartbeat() #Используется для постоянной проверки подключения
+print("Heartbeat from system(system %u component %u)" %
+        (master.target_system, master.target_component))
+while True:
+    msg = master.recv_match(type='GPS_RAW_INT', blocking=True) #Вывод координат
+    lat = msg.lat / 1e7  # Перевод координат в градусы
+    lon = msg.lon / 1e7
+    alt = msg.alt / 1000  # Высота в метрах
+    Time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) #Вывод времени
+    print(f'DateTime:{Time}\nLatitude:{lat}\nLongitude:{lon}\nAltitude:{alt}\n\n') #Вывод координат и времени в консоль
+    log_entry = f"DateTime:{Time}\nAltitude:{alt}\nLongitude:{lon}\nLatitude:{lat}\n\n" #Переменная для записи координат
+    gps = open('log.txt','a') #Запись координат в текстовый файл
+    gps.write(log_entry)
+    gps.close()
+
+    
